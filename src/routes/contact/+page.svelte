@@ -9,7 +9,7 @@
 
 <div class="grid grid-cols-2">
 	<div class="space-y-8">
-		<h1 class="text-4xl">Get in touch</h1>
+		<h1 class="text-4xl tracking-tight">Get in touch</h1>
 		<div class="flex flex-col gap-6">
 			<a href={`tel:${phone}`} class="group flex items-center gap-3">
 				<HugeiconsIcon icon={SmartPhone01Icon} />

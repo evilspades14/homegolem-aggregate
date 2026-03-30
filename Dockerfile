@@ -29,11 +29,10 @@ FROM node:22-slim
 
 WORKDIR /app
 
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/build ./build
-COPY --from=builder /app/scripts/server.js ./scripts/server.js
+COPY --from=builder /app/package.json /app/package.json
+COPY --from=builder /app/node_modules /app/node_modules
+COPY --from=builder /app/build /app/build
 
 EXPOSE 3000
 
-CMD ["node", "scripts/server.js"]
+CMD ["node", "/app/build/index.js"]

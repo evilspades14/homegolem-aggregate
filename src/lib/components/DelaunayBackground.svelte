@@ -25,6 +25,7 @@
 			oy: number;
 			phase: number;
 			amp: number;
+			isMouse?: boolean;
 		}
 
 		interface Triangle {
@@ -38,6 +39,23 @@
 		let tris: Triangle[] = [];
 		let frame = 0;
 		let lastTri = -999;
+
+		// Mouse state
+		let mouseX = W / 2;
+		let mouseY = H / 2;
+		let mouseActive = false;
+
+		function onMouseMove(e: MouseEvent) {
+			mouseX = e.clientX;
+			mouseY = e.clientY;
+			mouseActive = true;
+		}
+		function onMouseLeave() {
+			mouseActive = false;
+		}
+
+		window.addEventListener('mousemove', onMouseMove);
+		window.addEventListener('mouseleave', onMouseLeave);
 
 		function noise(x: number, y: number, t: number): number {
 			return (
@@ -60,6 +78,17 @@
 			p.ox = p.x;
 			p.oy = p.y;
 		}
+
+		// Add mouse node as last point
+		pts.push({
+			x: mouseX,
+			y: mouseY,
+			ox: mouseX,
+			oy: mouseY,
+			phase: 0,
+			amp: 0,
+			isMouse: true
+		});
 
 		function circumcircle(ax: number, ay: number, bx: number, by: number, cx: number, cy: number) {
 			const D = 2 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by));
@@ -94,12 +123,9 @@
 
 				for (const t of ts) {
 					const cc = circumcircle(
-						all[t.a].x,
-						all[t.a].y,
-						all[t.b].x,
-						all[t.b].y,
-						all[t.c].x,
-						all[t.c].y
+						all[t.a].x, all[t.a].y,
+						all[t.b].x, all[t.b].y,
+						all[t.c].x, all[t.c].y
 					);
 					if (cc && Math.hypot(p.x - cc.x, p.y - cc.y) < cc.r) bad.push(t);
 				}
@@ -128,10 +154,21 @@
 
 		function draw() {
 			frame++;
+
+			// Update regular nodes
 			for (const p of pts) {
-				p.x = p.ox + noise(p.ox, p.oy, frame + p.phase * 100) * p.amp;
-				p.y = p.oy + noise(p.ox + 500, p.oy + 500, frame + p.phase * 100 + 50) * p.amp;
+				if (p.isMouse) {
+					// Smoothly lerp mouse node toward actual cursor
+					p.x += (mouseX - p.x) * 0.12;
+					p.y += (mouseY - p.y) * 0.12;
+					p.ox = p.x;
+					p.oy = p.y;
+				} else {
+					p.x = p.ox + noise(p.ox, p.oy, frame + p.phase * 100) * p.amp;
+					p.y = p.oy + noise(p.ox + 500, p.oy + 500, frame + p.phase * 100 + 50) * p.amp;
+				}
 			}
+
 			if (frame - lastTri > 4) {
 				tris = triangulate(pts);
 				lastTri = frame;
@@ -141,9 +178,7 @@
 			ctx.fillRect(0, 0, W, H);
 
 			for (const t of tris) {
-				const a = pts[t.a],
-					b = pts[t.b],
-					c = pts[t.c];
+				const a = pts[t.a], b = pts[t.b], c = pts[t.c];
 				const mx = (a.x + b.x + c.x) / 3,
 					my = (a.y + b.y + c.y) / 3;
 				if (mx < -60 || mx > W + 60 || my < -60 || my > H + 60) continue;
@@ -160,15 +195,19 @@
 					1 - (Math.hypot(mx - W / 2, my - H / 2) / Math.hypot(W / 2, H / 2)) * 1.4
 				);
 
+				// Boost triangles that include the mouse node
+				const hasMouse = t.a === pts.length - 1 || t.b === pts.length - 1 || t.c === pts.length - 1;
+				const mouseBoost = hasMouse && mouseActive ? 0.5 : 0;
+
 				ctx.beginPath();
 				ctx.moveTo(a.x, a.y);
 				ctx.lineTo(b.x, b.y);
 				ctx.lineTo(c.x, c.y);
 				ctx.closePath();
-				ctx.fillStyle = `rgba(${Math.round(40 + heat * 60)},${Math.round(heat * 20)},0,${0.02 + heat * 0.04})`;
+				ctx.fillStyle = `rgba(${Math.round(40 + heat * 60)},${Math.round(heat * 20)},0,${0.02 + heat * 0.04 + mouseBoost * 0.08})`;
 				ctx.fill();
-				ctx.strokeStyle = `rgba(${Math.round(120 + heat * 135)},${Math.round(60 + heat * 35)},20,${0.12 + ef * 0.3})`;
-				ctx.lineWidth = 0.5 + heat * 0.4;
+				ctx.strokeStyle = `rgba(${Math.round(120 + heat * 135)},${Math.round(60 + heat * 35)},20,${0.12 + ef * 0.3 + mouseBoost * 0.4})`;
+				ctx.lineWidth = 0.5 + heat * 0.4 + mouseBoost * 1.2;
 				ctx.stroke();
 			}
 
@@ -177,16 +216,30 @@
 					0,
 					1 - (Math.hypot(p.x - W / 2, p.y - H / 2) / Math.hypot(W / 2, H / 2)) * 1.4
 				);
-				ctx.beginPath();
-				ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
-				ctx.fillStyle = `rgba(255,${Math.round(80 + heat * 40)},0,${0.3 + heat * 0.6})`;
-				ctx.fill();
+				if (p.isMouse) {
+					if (!mouseActive) continue; // hide dot when cursor is off-screen
+					// Render mouse node as a brighter, slightly larger dot
+					ctx.beginPath();
+					ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+					ctx.fillStyle = `rgba(255, 180, 60, 0.95)`;
+					ctx.fill();
+				} else {
+					ctx.beginPath();
+					ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
+					ctx.fillStyle = `rgba(255,${Math.round(80 + heat * 40)},0,${0.3 + heat * 0.6})`;
+					ctx.fill();
+				}
 			}
 
 			animFrame = requestAnimationFrame(draw);
 		}
 
 		draw();
+
+		return () => {
+			window.removeEventListener('mousemove', onMouseMove);
+			window.removeEventListener('mouseleave', onMouseLeave);
+		};
 	});
 
 	onDestroy(() => {
@@ -201,8 +254,8 @@
 		position: fixed;
 		top: 0;
 		left: 0;
-		width: 100vw;
-		height: 100vh;
+		width: 100dvw;
+		height: 100dvh;
 		z-index: -1;
 		display: block;
 	}

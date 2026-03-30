@@ -16,7 +16,7 @@ COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,target=/pnpm/store pnpm install --frozen-lockfile
 
 # copy remaining files
-COPY . .
+COPY . /app
 
 # build app
 RUN pnpm build

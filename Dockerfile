@@ -9,14 +9,9 @@ WORKDIR /app
 # ENV PNPM_HOME="/pnpm"
 # ENV PNPM_STORE_DIR="/pnpm/store"
 # ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && pnpm config set store-dir "$PNPM_STORE_DIR"
-
-# Install package dependencies (cache first)
-COPY package.json pnpm-lock.yaml ./
-RUN --mount=type=cache,target=/pnpm/store pnpm install --frozen-lockfile
-
-# copy remaining files
-COPY . /app
+RUN corepack enable && pnpm install --frozen-lockfile
+COPY . /staging/
+RUN pnpm build && pnpm prune --prod
 
 # build app
 RUN pnpm build

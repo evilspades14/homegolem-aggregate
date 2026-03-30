@@ -3,6 +3,4 @@ services:
     build: .
     restart: unless-stopped
     ports:
-      - "8000:8000"
-    environment:
-      - PORT=8000
+      - "3999:3000"

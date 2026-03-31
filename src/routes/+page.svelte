@@ -9,24 +9,22 @@
 	const email = 'jackson.homegolem@pm.me';
 </script>
 
-<main class="flex h-full w-full items-center justify-center">
-	<Card class="bg-card/80">
-		<CardContent class="relative w-xl flex-1 justify-center space-y-6 text-center ">
-			<CardHeader class="relative w-full">
-				<CardTitle class=" flex items-center gap-2 place-self-center text-3xl">
-					<Avatar.Root class="size-12">
-						<Avatar.Image src="/avatar.png" />
-						<Avatar.Fallback>JH</Avatar.Fallback>
-					</Avatar.Root>
-				</CardTitle>
-				<CardDescription>Jackson Holland</CardDescription>
-			</CardHeader>
-			<div class="flex justify-center">
-				<a href={`mailto:${email}`} class="group flex items-center gap-3">
-					<HugeiconsIcon icon={Mail01Icon} />
-					<span class="group-hover:underline">{email}</span>
-				</a>
-			</div>
+<main class="h-full w-full flex items-center justify-center p-6">
+	<Card class="w-full max-w-sm bg-card/80">
+		<CardHeader class="text-center">
+			<CardTitle class="flex place-self-center">
+				<Avatar.Root class="size-12">
+					<Avatar.Image src="/avatar.png" />
+					<Avatar.Fallback>JH</Avatar.Fallback>
+				</Avatar.Root>
+			</CardTitle>
+			<CardDescription>Jackson Holland</CardDescription>
+		</CardHeader>
+		<CardContent class="flex justify-center space-y-6 text-center">
+			<a href={`mailto:${email}`} class="group flex items-center gap-3">
+				<HugeiconsIcon icon={Mail01Icon} />
+				<span class="group-hover:underline">{email}</span>
+			</a>
 		</CardContent>
 	</Card>
 </main>

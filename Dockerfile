@@ -5,16 +5,19 @@ FROM node:22 AS builder
 
 WORKDIR /app
 
-# Install pnpm
-# ENV PNPM_HOME="/pnpm"
-# ENV PNPM_STORE_DIR="/pnpm/store"
-# ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && pnpm install --frozen-lockfile
-COPY . /staging/
-RUN pnpm build && pnpm prune --prod
+# Copy lockfile + manifest first (maximizes layer cache for installs)
+COPY package.json pnpm-lock.yaml ./
 
-# build app
+# Enable pnpm and install deps
+RUN corepack enable && pnpm install --frozen-lockfile
+
+# Copy source AFTER install (code changes only invalidate from here down)
+COPY . .
+
+# Build the app
 RUN pnpm build
+
+# Prune dev deps for the serve stage
 RUN pnpm prune --prod
 
 #######################################
@@ -24,9 +27,9 @@ FROM node:22-slim
 
 WORKDIR /app
 
-COPY --from=builder /app/package.json /app/package.json
-COPY --from=builder /app/node_modules /app/node_modules
-COPY --from=builder /app/build /app/build
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/build ./build
 
 EXPOSE 3000
 

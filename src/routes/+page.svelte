@@ -11,14 +11,14 @@
 
 <main class="h-full w-full flex items-center justify-center p-6">
 	<Card class="w-full max-w-sm bg-card/80">
-		<CardHeader class="text-center">
-			<CardTitle class="flex place-self-center">
+		<CardHeader class="flex flex-col items-center">
+			<CardTitle class="flex">
 				<Avatar.Root class="size-12">
 					<Avatar.Image src="/avatar.png" />
 					<Avatar.Fallback>JH</Avatar.Fallback>
 				</Avatar.Root>
 			</CardTitle>
-			<CardDescription>Jackson Holland</CardDescription>
+			<CardDescription class="text-center">Jackson Holland</CardDescription>
 		</CardHeader>
 		<CardContent class="flex justify-center space-y-6 text-center">
 			<a href={`mailto:${email}`} class="group flex items-center gap-3">

@@ -10,5 +10,5 @@
 <ModeWatcher />
 <!-- <NavBar /> -->
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
-<div class="p-4 no-scrollbar h-dvh w-dvw">{@render children()}</div>
+<div class="p-4 no-scrollbar h-dvh w-full">{@render children()}</div>
 
